@@ -6,7 +6,7 @@
 
 La programación funcional se basa en definir y aplicar funciones para procesar información. Las funciones son verdaderamente funciones matemáticas, sin efectos secundarios y con salidas consistentes para las mismas entradas.
 
-## **Características**:
+## **Características**
 
 - **Inmutabilidad**: Las estructuras de datos no cambian.
 - Funciones como datos: Las funciones pueden ser pasadas como parámetros, devueltas como resultados y formar parte de estructuras de datos.
