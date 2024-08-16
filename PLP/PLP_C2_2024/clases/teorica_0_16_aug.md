@@ -49,7 +49,7 @@ Se definen usando la notación `\` seguida de los parámetros y el cuerpo de la 
 
 La sintaxis general es `\param1 param2 -> expresión`.
 
-Por ejemplo, \x y -> x + y es una función lambda que suma dos números.
+Por ejemplo, `\x y -> x + y` es una función lambda que suma dos números.
 
 ### Uso
 
