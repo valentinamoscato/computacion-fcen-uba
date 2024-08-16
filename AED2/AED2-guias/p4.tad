@@ -1,0 +1,335 @@
+Ejercicio 7
+
+Producto es seq<struct<id: nat, stock: int, minimo: nat, subs: seq<int>>>
+
+TAD Stock {
+    obs productos: Producto
+
+    proc nuevoProducto(inout s: Stock, in id: nat, in minimo: nat)
+        requiere !(exists p' : Producto :: p' in s.productos && p'.id == id)
+        asegura forall p' : Producto :: p' in old(s).productos => p' in s.productos
+        asegura old(s).productos.length + 1 == s.productos.length
+        asegura s.productos[s.productos.length - 1].id == id
+                && s.productos[s.productos.length - 1].minimo == minimo
+
+    proc registrarCompra(inout s: Stock, in id: nat, in cantidad: nat)
+        asegura forall p' : Producto :: (p' in old(s).productos && p' != id) ==> p' in s.productos
+        asegura s.productos[id].stock == old(s).productos[id].stock + cantidad
+    
+    proc registrarVenta(inout s: Stock, in id: nat, in cantidad: nat)
+        requiere exists p' : Producto :: (p' in s.productos && p'.id == id) ==> p'.stock >= cantidad
+        asegura forall p' : Producto :: (p' in old(s).productos && p' != id) ==> p' in s.productos
+        asegura s.productos[id].stock == old(s).productos[id].stock - cantidad
+
+    proc informarSustituto(inout s: Stock, in id: nat, in sustituto: nat)
+        requiere exists p' : Producto :: p' in s.productos && p'.id == id
+        asegura forall p' : Producto :: (p' in old(s).productos && p' != id) ==> p' in s.productos
+        asegura s.productos[id].subs.length == old(s).productos[id].subs.length + 1
+                && s.productos[id].subs[s.productos[id].subs.length - 1] == sustituto
+
+    proc obtenerProductosNoDisponibles(in s: Stock): seq<nat>
+        asegura forall id : nat :: id in res ==> 
+                    s.productos[id].stock < s.productos[id].minimo 
+                    && (s.productos[id].subs.length == 0 
+                        || sumaStockSustitutos(s, id) + s.productos[id].stock < s.productos[id].minimo)
+    
+    aux sumaStockSustitutos(in s: Stock, in id: nat): nat =
+        sum(0, s.productos[id].subs.length, \i: nat :: s.productos[id].subs[i].stock)
+}
+
+Ejercicio 8
+
+TAD Jugador {
+    obs pos: seq<int>
+    
+    proc pasoPorBaldosa(in j: Jugador, in baldosa: int): bool
+        asegura res == (baldosa in j.pos)
+}
+
+TAD Tablero {
+    obs baldosas: seq<struct<id: int, mov: int>>
+    obs partida: int
+    obs llegada: nat
+
+    proc mover(in t: Tablero, in desde: int, in hasta: nat): int
+        requiere t.baldosas > 0
+                && t.partida == 0
+                && partida < desde < t.llegada
+                && desde < hasta < t.llegada
+        asegura (movimiento(t, desde, hasta) >= t.llegada ==> res == t.llegada)
+        asegura (movimiento(t, desde, hasta) <= t.partida ==> res == t.partida)
+        asegura (movimiento(t, desde, hasta) < t.llegada && movimiento(t, desde, hasta) > t.partida
+                    ==> res == movimiento(t, desde, hasta))
+    
+    aux movimiento(in t: Tablero, in desde: int, in hasta: int): int =
+        desde + hasta + t.baldosas[desde + hasta].mov
+}
+
+TAD Oca {
+    obs t: Tablero
+    obs j1: Jugador
+    obs j2: Jugador
+    obs ganador: int
+
+    proc jugarTurno(inout juego: Oca, in dado: nat)
+        requiere esTableroCorrecto(juego.t)
+                && esJugadorInicializado(juego.j1)
+                && esJugadorInicializado(juego.j2)
+                && juego.ganador == 0
+                && juego.j1.pos[juego.j1.pos.length - 1] < juego.t.llegada
+                && juego.j2.pos[juego.j2.pos.length - 1] < juego.t.llegada
+                && 0 < dado <= t.llegada
+        asegura (esPar(dado) ==> old(juego).j2 == juego.j2
+                && juego.j1.pos.length == old(juego).j1.pos.length + 1
+                    && juego.j1.pos[juego.j1.pos.length - 1] == t.mover(t, old(juego).j1.pos[old(juego).j1.pos.length - 1], dado)
+                        && (juego.j1.pasoPorBaldosa(t.llegada) ==> juego.ganador == 1) 
+                        && (!(juego.j1.pasoPorBaldosa(t.llegada)) ==> ganador == 0))
+                && (!esPar(dado) ==> old(juego).j1 == juego.j1
+                && juego.j2.pos.length == old(juego).j2.pos.length + 1
+                    && juego.j2.pos[juego.j2.pos.length - 1] == t.mover(t, old(juego).j2.pos[old(juego).j2.pos.length - 1], dado)
+                        && (juego.j2.pasoPorBaldosa(t.llegada) ==> juego.ganador == 1) 
+                        && (!(juego.j2.pasoPorBaldosa(t.llegada)) ==> ganador == 0))
+                && old(juego).t == juego.t
+    
+    proc obtenerGanador(in juego: Oca): int
+        requiere esTableroCorrecto(juego.t)
+            && esJugadorInicializado(juego.j1)
+            && esJugadorInicializado(juego.j2)
+            && (juego.ganador == 1 || juego.ganador == 2)
+        asegura (juego.j1.pos[juego.j1.pos.length - 1] == juego.t.llegada ==> res == 1)
+                && (juego.j2.pos[juego.j2.pos.length - 1] == juego.t.llegada ==> res == 2)
+
+    pred esTableroCorrecto(t: Tablero): {
+        t.partida == 0
+            && t.llegada > 0
+            && t.baldosas.length > 0
+            && forall i : int :: (1 <= i && i < t.baldosas.length) ==>
+                (t.baldosas[i-1].id + 1 == t.baldosas[i].id)
+    }
+
+    pred esJugadorInicializado(j: Jugador): {
+        j.pos.length >= 1 && j.pos[0] == 0
+    }
+}
+
+Ejercicio 9
+
+Cliente es seq<struct<dni: int, prioridad: bool>>
+
+TAD Caja {
+    obs ocupada: bool
+    obs fila: seq<Cliente>
+
+    proc posicionNuevoCliente(inout c: Caja, in dni: int, in prioridad: bool, in atiendeSoloPrioridad: bool): int
+        asegura c.fila.length == old(c).fila.length + 1
+        asegura forall c : Cliente :: c in old(c).fila && c.dni != dni ==> c in c.fila
+        asegura (!atiendeSoloPrioridad ==> (prioridad ==> exists i : int :: 0 <= i && i < c.fila.length
+                    ==>L c.fila[i].dni == dni && esUltimoLugarPrioritario(c.fila, <dni, prioridad>, i)
+                        && res == i)
+                    && (!prioridad ==> c.fila[c.fila.length - 1].dni == dni && res == c.fila.length - 1))
+        asegura (atiendeSoloPrioridad ==> c.fila[c.fila.length - 1].dni == dni && res == c.fila.length - 1)
+
+    
+    pred esUltimoLugarPrioritario(fila: seq<Cliente>, c: Cliente, pos: int): {
+        forall i : int :: (0 <= i && i < fila.length)
+            ==>L ((fila[i].dni != c.dni && fila[i].prioridad) ==> i < pos
+                && (fila[i].dni == c.dni || !fila[i].prioridad) ==> i > pos)
+    }
+}
+
+TAD Banco {
+    obs cajaA: Caja
+    obs cajaB: Caja
+
+    proc nuevoCliente(inout b: Banco, in c: Cliente)
+        asegura forall c' : Cliente :: c' in old(b).cajaA.fila ==> c' in b.cajaA.fila
+        asegura forall c' : Cliente :: c' in old(b).cajaB.fila ==> c' in b.cajaB.fila
+        asegura (c.cajaA.fila.length <= c.cajaB.fila.length
+                    ==> b.cajaA.fila[b.cajaA.posicionNuevoCliente(b.cajaA, c.dni, c.prioridad, true)] == c)
+                && (c.cajaA.fila.length > c.cajaB.fila.length
+                    ==> b.cajaB.fila[b.cajaB.posicionNuevoCliente(b.cajaB, c.dni, c.prioridad, false)] == c)
+
+    proc atender(inout b: Banco)
+        requiere b.cajaA.fila.length > 0 || b.cajaB.fila.length > 0
+        asegura forall i : int :: (1 <= i && i < old(b).cajaA.fila.length) ==> b.cajaA.fila[i] in b.cajaA.fila
+        asegura forall i : int :: (1 <= i && i < old(b).cajaB.fila.length) ==> b.cajaB.fila[i] in b.cajaB.fila
+        asegura (b.cajaA.ocupada && b.cajaB.ocupada
+                ==> old(b).cajaA.fila[0] == b.cajaA.fila[0]
+                    && old(b).cajaB.fila[0] == b.cajaB.fila[0]
+                    && old(b).cajaA.fila.length == b.cajaA.fila.length
+                    && old(b).cajaB.fila.length == b.cajaB.fila.length)
+        asegura (b.cajaA.ocupada && !b.cajaB.ocupada
+                ==> old(b).cajaA.fila[0] == b.cajaA.fila[0]
+                    && old(b).cajaA.fila.length == b.cajaA.fila.length
+                    && old(b).cajaB.fila.length - 1 == b.cajaB.fila)
+        asegura (!b.cajaA.ocupada && b.cajaB.ocupada
+                ==> old(b).cajaB.fila[0] == b.cajaB.fila[0]
+                    && old(b).cajaB.fila.length == b.cajaB.fila.length
+                    && old(b).cajaA.fila.length - 1 == b.cajaA.fila)
+        asegura (!b.cajaA.ocupada && !b.cajaB.ocupada
+                ==> (old(b).cajaA.fila.length - 1 == b.cajaA.fila
+                        && !(old(b).cajaA.fila[0] in b.cajaA.fila)
+                    && (old(b).cajaB.fila.length - 1 == b.cajaB.fila
+                        && !(old(b).cajaB.fila[0] in b.cajaB.fila))))
+}
+
+Ejercicio 10
+
+TAD Alumno {
+    obs baño: bool
+    obs quiereVolver: bool
+    obs cant: int
+    
+    proc quiereIrAlBaño(): bool
+        asegura res == a.baño && a.quiereVolver == False && a.cant < 3
+
+    proc quiereVolver(): bool
+        asegura res == a.quiereVolver
+
+    proc vaAlBaño(inout a: Alumno)
+        requiere a.baño && a.cant < 3 && a.quiereVolver == False
+        asegura a.baño == False && a.quiereVolver == False && a.cant == old(a).cant + 1
+}
+
+TAD Baño {
+    obs ocupado: bool
+
+    proc estaOcupado(in b: Baño): bool
+        asegura res == b.ocupado
+}
+
+TAD Cola {
+    obs alumnos: seq<Alumno>
+
+    proc estaVacia(in c: Cola): bool
+        asegura res == (c.alumnos.length == 0)
+
+    proc avanza(inout c: Cola)
+        requiere c.alumnos.length > 0
+        asegura c.alumnos.length == old(c).alumnos.length - 1
+        asegura forall a : Alumno :: a in c.alumnos ==> a in old(c).alumnos
+        asegura !(old(c).alumnos[0] in c.alumnos)
+        asegura old(c).alumnos[0].vaAlBaño(old(c).alumnos[0])
+}
+
+TAD Parcial {
+    obs t: nat
+    obs alumnos: seq<Alumno>
+    obs cola: seq<Alumno>
+    obs bañoOcupado: bool
+
+    proc iniciarParcial(): Parcial
+        asegura res.t == 0
+                && res.alumnos.length > 0
+                && forall a : Alumno :: a in res.alumnos
+                    ==> (a.cant == 0 && a.baño == False && a.quiereVolver == False)
+                && res.cola.length == 0
+                && res.bañoOcupado == False
+
+    proc alguienQuiereIrAlBaño(inout p: Parcial, inout a: Alumno)
+        asegura old(p).alumnos.length == p.alumnos.length
+        asegura (old(p).bañoOcupado || (!old(p).bañoOcupado && old(p).cola.length > 0))
+                    ==> (p.cola.length == old(p).cola.length + 1
+                            && forall a : Alumno :: a in old(p).cola && !a.quiereVolver() ==> a in p.cola
+                            && p.cola[p.cola.length - 1] == a
+                            && old(p).bañoOcupado == p.bañoOcupado)
+        asegura (!p.bañoOcupado && old(p).cola.length == 0)
+                    ==> (p.bañoOcupado == True
+                        && p.cola.length == 0
+                        && a.vaAlBaño(a))
+    
+    proc desocuparBaño(inout p: Parcial)
+        requiere p.bañoOcupado
+        asegura old(p).alumnos.length == p.alumnos.length
+        asegura (old(p).bañoOcupado && p.cola.length == 0)
+                    ==> (p.bañoOcupado == False)
+        asegura (old(p).bañoOcupado && p.cola.length > 0)
+                    ==> (p.bañoOcupado == True
+                        && p.cola.avanza(p.cola))
+}
+
+Ejercicio 10 (v2)
+
+Alumno es struct<libreta: nat, historial: int>
+
+TAD Parcial {
+    obs alumnos: conj<Alumno>
+    obs cola: seq<Alumno>
+    obs bañoOcupado: bool
+
+    proc iniciarParcial(): Parcial // Inicializa todo vacío y el baño desocupado
+        asegura res.alumnos == {}
+                && res.cola == []
+                && res.bañoOcupado == False
+
+    proc agregarAlumno(inout p: Parcial, in a: Alumno)
+        requiere old(p) == p && !(exists a' : Alumno :: a' in p.alumnos && a'.libreta == a.libreta) // No estaba previante en la lista de alumnos
+        asegura p.alumnos == old(p).alumnos U {a} // El alumno fue agregado
+        asegura p.cola == old(p).cola // La cola no cambió
+        asegura p.bañoOcupado == old(p).bañoOcupado // El baño no cambió
+    
+    proc levantarseAlBaño(inout p: Parcial, in a: Alumno)
+        requiere (old(p) == p && a in p.alumnos && !(a in p.cola) && a.historial < 3) // El alumno está en la lista de alumnos, puede ir al baño y no está en la cola
+        asegura p.alumnos == old(p).alumnos // La lista de alumnos no cambió
+        asegura (p.bañoOcupado == True || (p.bañoOcupado == False && length(old(p).cola) > 0)) // Si el baño está ocupado o hay gente en la cola
+                    ==> (p.cola == old(p).cola U {a} && p.bañoOcupado == old(p).bañoOcupado) // El alumno fue agregado a la cola y el baño no cambió
+        asegura (p.bañoOcupado == False && length(old(p).cola) == 0) // Si el baño no está ocupado y no hay gente en la cola
+                    ==> p.cola == [] && p.bañoOcupado == True // El alumno fue al baño y el baño está ocupado
+    
+    proc sentarse(inout p: Parcial, in a: Alumno)
+        requiere old(p) == p && a in p.alumnos && a in p.cola // El alumno está en la lista de alumnos y en la cola
+        asegura p.alumnos == old(p).alumnos && p.bañoOcupado == old(p).bañoOcupado // La lista de alumnos y el baño no cambiaron
+        asegura forall a' : Alumno :: a' in old(p).cola && a' != a ==> a' in p.cola // Todos los que estaban en la cola distintos al alumno siguen estando en la cola
+        asegura !(a in p.cola) // El alumno ya no está en la cola
+    
+    proc desocuparBaño(inout p: Parcial)
+        requiere old(p) == p && p.bañoOcupado == True // El baño está ocupado
+        asegura length(old(p).cola) > 0 ==> (p.cola == subeq(old(p).cola, 1, length(old(p).cola) - 1) // Si hay gente en la cola, el primero se va al baño y el resto de la cola sigue igual
+                    && forall a : Alumno :: a in alumnos && a != old(p).cola[0] ==> a in p.alumnos // Todos los alumnos distintos al primero siguen estando en la lista de alumnos
+                    && old(p).cola[0].historial == old(p).cola[0].historial + 1 // El alumno que va al baño suma 1 a su historial
+                    && old(p).cola[0].libreta == old(p).cola[0].libreta) // El alumno que va al baño sigue siendo el mismo (misma libreta)
+        asegura length(old(p).cola) == 0 ==> (p.cola == [] && p.bañoOcupado == False) // Si no hay gente en la cola, el baño se desocupa y la cola sigue igual
+}
+
+Ejercicio 11
+
+TAD Tecnico {
+    obs disponible: bool
+    obs domicilioActual: string
+
+    proc estaDisponible(in t: Tecnico): bool
+        asegura res == t.disponible
+
+    proc visita(inout t: Tecnico, in domicilio: string)
+        requiere t.disponible
+        asegura t.disponible == False && t.domicilioActual == domicilio
+
+    proc vuelveACentral(inout t: Tecnico)
+        requiere !t.disponible
+        asegura t.disponible == True && t.domicilioActual == "central"
+}
+
+TAD TaD {
+    obs tecnicos: seq<Tecnico>
+    obs pendientes: seq<string>
+
+    proc nuevaSolicitud(inout t: TaD, s: string)
+        requiere t.tecnicos.length > 0
+        asegura forall s' : string :: s' in old(t).pendientes ==> s' in t.pendientes
+        asegura (exists t' : Tecnico :: t' in old(t).tecnicos && t'.disponible)
+                    ==> (t.visita(t, s) && t.pendientes == old(t).pendientes)
+        asegura !(exists t' : Tecnico :: t' in old(t).tecnicos && t'.disponible)
+                    ==> (t.pendientes.length == old(t).pendientes.length + 1
+                            && t.pendientes[t.pendientes.length - 1] == s)
+    
+    proc tecnicoTermina(inout t: TaD, inout tec: Tecnico)
+        requiere tec in t.tecnicos && tec.estaDisponible() && tec.domicilioActual != "central"
+        asegura forall tec' : Tecnico :: tec' in old(t).tecnicos && tec' != tec ==> tec' in t.tecnicos
+        asegura old(t).pendientes.length > 0
+                ==> (tec.visita(tec, old(t).pendientes[old(t).pendientes.length - 1])
+                    && forall s : string :: (s in old(t).pendientes && s != old(t).pendientes[old(t).pendientes.length - 1])
+                        ==> s in t.pendientes
+                    && t.pendientes.length == old(t).pendientes.length - 1)
+        asegura old(t).pendientes.length == 0 
+                ==> (t.pendientes == old(t).pendientes && tec.vuelveACentral(tec))
+}

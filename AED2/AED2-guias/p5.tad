@@ -1,0 +1,682 @@
+Ejercicio 1
+
+pred InvRep(d': DiccionarioAcotadoImpl<K,V>) {
+    forall i,j : int :: (0 <= i,j < d'.arr.length && i != j) => d'.arr[i]_0 != d'.arr[j]_0
+}
+
+aux FuncAbs(d': DiccionarioAcotadoImpl<K,V>) : DiccionarioAcotado<K,V> {
+    d: DiccionarioAcotado<K,V> |
+        d.cap == d'.arr.length
+        && forall t : tupla<K,V> :: t in d'.arr =>L t_0 in d.data && d.data[t_0] == t_1
+}
+
+Ejercicio 2
+
+Modulo ConjAcotadoImpl<T> implenenta ConjAcotado<T> {
+    var elems: Array<T>
+    var enUso: Array<bool>
+
+    pred InvRep(c': ConjAcotadoImpl<T>) {
+        c'.elems.length == c'.enUso.length
+        && forall i,j : int :: (0 <= i,j < c'.elems.length && i != j) => (
+            c'.elems[i] != c'.elems[j] || (c'.elems[i] == c'.elems[j] => (!c'.enUso[i] || !c'.enUso[j]))
+        )
+    }
+
+    aux FuncAbs(c': ConjAcotadoImpl<T>) : ConjAcotado<T> {
+        c: ConjAcotado<T> |
+            c.caps == c'.elems.length
+            && forall i : int :: (0 <= i < c'.elems.length &&L c'.enUso[i]) =>L c'.elems[i] in c.elems
+            && forall t : T :: t in c.elems => (exists i : int :: (0 <= i < c'.elems.length &&L (c'.enUso[i] && c'.elems[i] == t)))
+    }
+}
+
+Ejercicio 3
+
+Modulo ColaAcotadaImp<T> implementa ColaAcotada<T> {
+    var inicio: int
+    var fin: int
+    var elems: array<T>
+
+    pred InvRep(c': ColaAcotadaImp<T>) {
+        0 <= c'.inicio < c'.elems.length
+        && 0 <= c'.fin < c'.elems.length
+    }
+
+    aux FuncAbs(c': ColaAcotadaImp<T>): ColaAcotada<T> {
+        c: ColaAcotada<T> |
+            c.cap == c'.elems.length
+            && (c'.inicio <= c'.fin => c'.fin - c'.inicio == c.s.length)
+            && (c'.fin < c'.inicio => c'.fin + c'.elems.length - 1 - c'.inicio == c.s.length)
+            && forall i : int :: (0 <= i < c'.elems.length) =>L (
+                ((c'.inicio <= c'.fin && c'.inicio <= i <= c'.fin) =>L (c'.elems[i] == c.s[i - c'.inicio]))
+                && (c'.fin < c'.inicio =>L (
+                    (c'.inicio <= i < c'.elems.length => c'.elems[i] == c.s[i - c'.inicio])
+                    && (0 <= i < c'.fin => c'.elems[i] == c.s[i + c'.elems.length - 1 - c'.inicio])
+                ))
+            )
+    }
+
+    proc colaVacia(in c: int): ColaAcotadaImpl<T>
+        requiere { c >= 0 }
+        asegura { res.cap == c && forall t : T :: t in res.elems => t == 0 }
+        complejidad O(1)
+        {
+            var cola := new ColaAcotadaImp<T>
+            cola.inicio := -1
+            cola.fin := -1
+            cola.elems := new Array<T>(c)
+
+            return cola
+        }
+    
+    proc vacia(in cola: ColaAcotadaImpl<T>): bool
+        asegura { res == (cola.inicio == -1) }
+        complejidad O(1)
+        {
+            return cola.inicio == -1
+        }
+    
+    proc encolar(inout c: ColaAcotadaImpl<T>, in e: T)
+        requiere { exists i : int :: (0 <= i < c.elems.length &&L
+            (c.inicio <= c.fin => c.inicio <= i <= c.fin)
+            && (c.fin < c.inicio => (0 <= i <= c.fin || c.inicio <= i < c.elems.length))
+            && c.elems[i] == 0) }
+        asegura { c.elems.length == old(c).elems.length                  
+                    && c.inicio == old(c).inicio
+                    && c.fin == (old(c).fin + 1) % c.elems.length
+                    && c.elems[c.fin] == e
+                    && forall i : int :: (0 <= i < c.elems.length && i != c.fin) =>L c.elems[i] == old(c).elems[i] }
+        complejidad O(1)
+        {
+            if (c.inicio == -1) {
+                c.inicio := 0
+            }
+            c.fin := (c.fin + 1) % c.elems.length
+            c.elems[c.fin] := e
+        }
+
+    proc desencolar(inout c: ColaAcotadaImpl<T>): T
+        requiere { c.inicio != -1 }
+        asegura { c.elems.length == old(c).elems.length
+                    && c.fin == old(c).fin
+                    && c.inicio == (old(c).inicio + 1) % c.elems.length
+                    && c.elems[c.inicio] == 0
+                    && forall i : int :: (0 <= i < c.elems.length && i != c.inicio) =>L c.elems[i] == old(c).elems[i]
+                    && res == old(c).elems[old(c).inicio] }
+        complejidad O(1)
+        {
+            var res := c.elems[c.inicio]
+            c.elems[c.inicio] := 0
+            if (c.inicio == c.fin) {
+                c.inicio := -1
+                c.fin := -1
+            } else {
+                c.inicio := (c.inicio + 1) % c.elems.length
+            }
+            return res
+        }
+}
+
+Ejercicio 4
+
+TAD Planta {
+    obs alarmas: conj<Alarma>
+    obs sensores: conj<tupla<Sensor, Alarma>>
+
+    proc nuevaPlanta(): Planta
+        asegura { res.alarmas == {} }
+        asegura { res.sensores == {} }
+
+    proc agregarAlarma(input p: Planta, in a: Alarma)
+        requiere { !(a in p.alarmas) }
+        asegura { p.alarmas == old(p).alarmas + {a} }
+        asegura { p.sensores == old(p).sensores }
+
+    proc agregarSensor(inout p: Planta, in a: Alarma, in s: Sensor)
+        requiere { a in p.alarmas }
+        requiere { !(<s,a> in p.sensores) }
+        asegura { p.alarmas == old(p).alarmas }
+        asegura { p.sensores == old(p.sensores) + {<s,a>} }
+}
+
+Modulo PlantaImpl implementa Planta {
+    var alarmas: Diccionario<Alarma, Conjunto<Sensor>>
+    var sensores: Diccionario<Sensor, Conjunto<Alarma>>
+
+    // InvRep: Todo Sensor en alarmas debe estar en sensores, y toda Alarma en sensores debe estar en alarmas
+    // No pueden existir sensores sin alarmas pero sí alarmas sin sensores
+
+    pred InvRep(p': PlantaImpl) {
+        forall a : Alarma :: a in p'.alarmas => (
+            forall s: Sensor :: s in p'.alarmas[a] => s in p'.sensores
+        )
+        && forall s : Sensor :: s in p'.sensores => (
+            p'.sensores[s].length > 0
+            && forall a: Alarma :: a in p'.sensores[s] => a in p'.alarmas
+        )
+    }
+
+    aux FuncAbs(p': PlantaImpl): Planta {
+        p: Planta |
+            p.alarmas.length == p'.alarmas.length
+            && p.sensores.length == p'.sensores.length
+            && forall a : Alarma :: a in p'.alarmas => (
+                a in p.alarmas
+                && forall s : Sensor :: s in p'.alarmas[a] => <s,a> in p.sensores
+            ) // Todas las alarmas de Impl están en Abs y todos sus sensores tienen una tupla en Abs
+            && forall s : Sensor :: s in p'.sensores => (
+                forall <s',a> : tupla<Sensor, Alarma> :: s == s' && a in p.alarmas => <s,a> in p.sensores
+            ) // Todos los sensores de Impl están en Abs y, para cada uno, existe una tupla y todas sus alarmas están en Abs
+            && forall a : Alarma :: a in p.alarmas => a in p'.alarmas // Todas las alarmas de Abs están en Impl
+            && forall <s,c> : tupla<Sensor, Conjunto<Alarma>> :: <s,c> in p.sensores => (
+                s in p'.sensores && (forall a : Alarma :: a in c => (a in p'.sensores[s] && a in p.alarmas))
+            ) // Todos los sensores de Abs y todas sus alarmas están en Impl
+    }
+}
+
+Ejercicio 5
+
+TAD Planilla {
+    obs actividades: conj<Actividad>
+    obs proyectoDe: dict<Actividad, Proyecto>
+    obs mesDe: dict<Actividad, int>
+    obs horaDe: dict<Actividad, int>
+
+    proc nuevaPlanilla(): Planilla
+
+    proc totProyxMes(in p: Planilla, in m: Mes, in r: Proyecto): int
+
+    proc agregar(
+        inout p: Planilla,
+        in a: Actividad,
+        in r: Proyecto,
+        in mes: int,
+        in horas: int
+    )
+}
+
+Modulo PlanillaImpl implementa Planilla {
+    var detalle: Diccionario<
+        Actividad, struct<proy: Proyecto, mes: int, horas: int>
+    >
+    var horasPorMes: Diccionario<Proyecto, Array<int>>
+
+    // InvRep: Todos los proyectos en detalle deben estar en horasPorMes y viceversa
+    // El arreglo de horasPorMes debe tener longitud 12 y todos sus elementos deben ser >= 0
+    // Todos los elementos del arreglo de horasPorMes debe ser la suma de las horas de todas las actividades de ese proyecto (en detalle) en ese mes
+
+    pred InvRep(p': PlanillaImpl) {
+        forall a : Actividad :: a in p'.detalle => (
+            p'.detalle[a].proy in p'.horasPorMes
+            && p'.detalle[a].mes >= 0 && p'.detalle[a].mes < 12
+            && p'.detalle[a].horas >= 0 && p'.detalle[a].horas <= horasDelMes(p'.detalle[a].mes)
+        )
+        && forall p : Proyecto :: p in p'.horasPorMes => (
+            p'.horasPorMes[p].length == 12
+            && forall i : int :: (0 <= i < 12) => p'.horasPorMes[p][i] >= 0
+            && forall a : Actividad :: (
+                (a in p'.detalle && p'.detalle[a].proy == p)
+                    => p'.horasPorMes[p][p'.detalle[a].mes] == p'.detalle[a].horas
+            )
+        )
+    }
+
+    aux horasDelMes(m: int): nat =
+        if m in [0,2,4,6,7,9,11] then
+            31
+        else
+            if m in [3,5,8,10] then
+                30
+            else
+                28
+            fi
+        fi
+
+    aux FuncAbs(p': PlanillaImpl): Planilla
+        p: Planilla |
+            p.actividades.length == p'.detalle.length
+            && p.proyectoDe.length == p'.detalle.length
+            && p.mesDe.length == p'.detalle.length
+            && p.horaDe.length == p'.detalle.length
+            && forall a : Actividad :: a in p'.detalle => (
+                a in p.actividades
+                && p'.detalle[a].proy == p.proyectoDe[a]
+                && p'.detalle[a].mes == p.mesDe[a]
+                && p'.detalle[a].horas == p.horaDe[a]
+            )
+            && forall k : Proyecto :: k in p'.horasPorMes => (
+                exists a : Actividad :: (
+                    a in p.actividades && p.proyectoDe[a] == k
+                )
+                && p'.horasPorMes[p.mesDe[k]] == p.horaDe[k] 
+            )
+
+}
+
+Actividad es string
+Proyecto es string
+
+Ejercicio 6
+
+TAD AltaFiesta {
+    obs invitados: conj<Persona>
+    obs pendientes: conj<Persona>
+    obs grupoDe: dict<Persona, Grupo>
+    obs regaloDe: dict<Persona, Regalo>
+
+    proc iniciarFiesta(in personas: Conjunto<Persona>): AltaFiesta
+
+    proc lleganInvitados(
+        inout a: AltaFiesta,
+        in c: Conjunto<Persona>,
+        in g: Grupo,
+        in r: Regalo
+    )
+}
+
+modulo AltaFiestaImpl implementa AltaFiesta {
+    var invitados: Conjunto<Persona>
+    var presentes: Conjunto<Persona>
+    var grupoDe: Diccionario<Grupo, Conjunto<Persona>>
+    var regaloDeGrupo: Diccionario<Grupo, Regalo>
+
+    // Notas:
+    // En invitados están todos los invitados a la fiesta, incluyendo también a aquellos que ya llegaron.
+    // En presentes están los invitados que ya llegaron a la fiesta.
+    // En grupoDe se encuentra, para cada identificador de grupo i, las personas que al llegar agrupadas se identificaron como i.
+    // En regaloDeGrupo se encuentra qué regalo trajo cada grupo.
+
+    // InvRep:
+    // Todos los presentes están en invitados
+    // Todos los presentes están asociados exclusivamente a algún grupo en grupoDe
+    // Todos los grupos en grupoDe están asociados exclusivamente a algún regalo en regaloDeGrupo
+    // Todos los grupos en grupoDe tienen al menos un integrante, y todos sus integrantes forman parte de los presentes
+
+    pred InvRep(a': AltaFiestaImpl) {
+        a'.presentes.length <= a'.invitados.length
+        && a'.grupoDe.length == a'.regaloDeGrupo.length
+        forall p : Persona :: p in a'.presentes => p in a'.invitados
+        && forall g : Grupo :: g in a'.grupoDe => (
+            g in a'.regaloDeGrupo
+            && forall g' : Grupo :: g' in a'.regaloDeGrupo => (
+                g' != g => forall r : Regalo :: r in a'.regaloDeGrupo[g'] => r != a'.regaloDeGrupo[g]
+            )
+            && a'.grupoDe[g].length > 0
+            && forall p : Persona :: p in a'.grupoDe[g] => (
+                p in a'.presentes
+                && forall g' : Grupo :: g' in a'.grupoDe => (
+                    g' != g => forall p' : Persona :: p' in a'.grupoDe[g'] => p' != p
+                )
+            )
+        )
+    }
+
+    aux FuncAbs(a': AltaFiestaImpl): AltaFiesta
+        a: AltaFiesta |
+            a.invitados == a'.invitados
+            && a.pendientes == a'.invitados - a'.presentes
+            && a.grupoDe.length == a'.grupoDe.length
+            && a.regaloDe.length == a'.regaloDeGrupo.length
+            && forall p : Persona :: p in a'.presentes => (
+                p in a.invitados
+                && p not in a.pendientes
+                && exists g : Grupo :: (
+                    g in a.grupoDe
+                    && g in a'.grupoDe
+                    && p in a.grupoDe[g]
+                    && a.regaloDe[g] == a'.regaloDeGrupo[g]
+                )
+            )
+            && forall g : Grupo :: g in a'.grupoDe => (
+                g in a.grupoDe
+                && a'.regaloDeGrupo[g] == a.regaloDe[g]
+                && forall p : Persona :: p in a'.grupoDe[g] => (
+                    p in a.invitados
+                    && p not in a.pendientes
+                    && forall g' : Grupo :: g' in a'.grupoDe => (
+                        g' != g => forall p' : Persona :: p' in a'.grupoDe[g'] => p' != p
+                    )
+                )
+            )
+            && forall p : Persona :: p in a.invitados => p in a'.invitados
+            && forall p : Persona :: p in a.pendientes => p in a.invitados && p in a'.invitados && p not in a'.presentes
+    
+    proc llegaGrupo(inout a': AltaFiestaImpl, in n: Grupo, in g: Conjunto<Persona>, in r: Regalo)
+        requiere { n not in a'.grupoDe && g.length > 0 }
+        requiere { forall p : Persona :: p in g =>
+                    p in a'.invitados
+                    && p not in a'.presentes
+                    && not exists g' : Grupo :: g' in a'.grupoDe => p in a'.grupoDe[g'] }
+        requiere { forall p, p' : Persona :: p in g && p' in g => p != p' }
+        requiere { n not in a'.regaloDeGrupo }
+        asegura { a'.invitados == old(a').invitados }
+        asegura { a'.presentes == old(a').presentes + g }
+        asegura { a'.grupoDe == old(a').grupoDe + {<n, g>} }
+        asegura { a'.regaloDeGrupo == old(a').regaloDeGrupo + {<n, r>} }
+        complejidad O(n)
+        {
+            var nuevoPresentes = new Conjunto<Persona>[a'.presentes.length + g.length]
+            var nuevoGrupos = new Diccionario<Grupo, Conjunto<Persona>>[a'.grupoDe.length + 1]
+            var nuevoRegalos = new Diccionario<Grupo, Regalo>[a'.regaloDeGrupo.length + 1]
+            for(int i = 0; i < a'.presentes.length; i++) {
+                nuevoPresentes[i] := a'.presentes[i]
+            }
+            for(int i = 0; i < g.length.length; i++) {
+                nuevoPresentes[a'.presentes.length + i] := g[i]
+            }
+            for(int i = 0; i < a'.grupoDe.length; i++) {
+                nuevoGrupos[i] := a'.grupoDe[i] // En este punto, va a haber más grupos que regalos
+                nuevoRegalos[i] := a'.regaloDeGrupo[i]
+            }
+            nuevoGrupos[nuevoGrupos.length - 1] := <n, g>
+            nuevoRegalos[nuevoRegalos.length - 1] := <n, r>
+            a'.presentes := nuevoPresentes
+            a'.grupoDe := nuevoGrupos
+            a'.regaloDeGrupo := nuevoRegalos
+        }
+
+}
+
+Persona es string
+Grupo es string
+Regalo es string
+
+Ejercicio 7
+
+TAD Oficina {
+    obs categorias: conj<Categoria>
+    obs tramitesPend: seq<Id>
+    obs catsPrioritarias: conj<Categoria>
+    obs categoriaDe: dict<Id, Categoria>
+
+    proc nuevaOficina(): Oficina
+
+    proc agregaCategoria(inout o: Oficina, in c: Categoria)
+        asegura o.categorias == old(o).categorias + {c}
+        asegura o.tramitesPend == old(o).tramitesPend
+        asegura o.catsPrioritarias == old(o).catsPrioritarias
+    
+    proc agregaTramite(inout o: Oficina, in i: Id, in c: Categoria)
+        requiere c in o.categorias && i not in o.tramitesPend
+        asegura o.categorias == old(o).categorias
+        asegura o.tramitesPend == old(o).tramitesPend + {i}
+        asegura o.categoriaDe == setKey(old(o).categoriaDe, i, c)
+    
+    proc priorizaCategoria(inout o: Oficina, in c: Categoria)
+        requiere c in o.categorias
+        asegura o.catsPrioritarias == old(o).catsPrioritarias + {c}
+        asegura o.categorias == old(o).categorias
+        asegura o.tramitesPend == old(o).tramitesPend
+        asegura o.categoriaDe == old(o).categoriaDe
+    
+    proc pendientesPrioritarios(in o: Oficina): seq<Id>
+        asegura forall i: Id ::
+            i in res <==> i in o.categoriaDe && o.categoriaDe[i] in o.catsPrioritarias
+}
+
+modulo OficinaImpl implementa Oficina {
+    var catPrioritarias: Conjunto<Categoria>
+    var tramites: Diccionario<Id, Categoria>
+    var tramCat: Diccionario<Categoria, Conjunto<Id>>
+    var pendPrioritarios: Conjunto<Id>
+    var pendientes: Conjunto<Id>
+
+    // Notas:
+    // Informalmente, catPrioritarias representa el conjunto de todas las categorías a las que se ha dado prioridad,
+    // tramites asocia a cada trámite su categoría mientras que tramCat describe todos los trámites asociados a cada
+    // categoría. pendPrioritarios contiene la secuencia de trámites pendientes que tienen una categoría prioritaria
+    // mientras que pendientes contiene todos los trámites pendientes (incluso a los prioritarios).
+
+    // InvRep:
+    // Todos los trámites en tramites deben estar en pendientes y viceversa
+    // Todos los trámites en pendPrioritarios deben estar en tramites (id) y en pendientes (id)
+    // y tener una categoría prioritaria (su categoria en tramites debe estar en catPrioritarias)
+    // Todas las categorias en catPrioritarias deben estar en tramCat y en tramites
+    // Todos los id en tramCat deben estar en tramites y en pendientes
+
+    pred InvRep(o': OficinaImpl) {
+        forall i : Id :: i in o'.tramites <=> (
+            i in o'.pendientes
+            && o'.tramites[i] in o'.tramCat
+            && i in o'.tramCat[o'.tramites[i]]
+        ) // Todos los trámites en tramites deben estar en pendientes y viceversa
+        forall i : Id :: i in pendPrioritarios => (
+            i in o'.tramites
+            && i in o'.pendientes
+            &&L o'.tramites[i] in o'.catPrioritarias
+            && exists c : Categoria :: (
+                c in o'.catPrioritarias
+                && c in o'.tramCat
+                && i in o'.tramCat[c]
+            )
+        ) // Todos los trámites en pendPrioritarios deben estar en tramites (id) y en pendientes (id)
+        // y tener una categoría prioritaria (su categoria en tramites debe estar en catPrioritarias)
+        forall i : Id :: i in o'.pendientes && i not in o'.pendPrioritarios => (
+            i in o'.tramites
+            &&L (i in o'.tramCat[o'.tramites[i]]
+                && o'.tramites[i] not in o'.catPrioritarias)
+        ) // Todos los trámites en pendientes que no están en pendPrioritarios no tienen categoría prioritaria
+        forall c : Categoria :: c in o'.catPrioritarias => (
+            c in o'.tramCat
+            && c in o'.tramites
+        ) // Todas las categorias en catPrioritarias deben estar en tramCat y en tramites
+        forall c : Categoria :: c in o'.tramCat => (
+            forall i : Id :: i in o'.tramCat[c] => (
+                i in o'.tramites
+                && i in o'.pendientes
+            )
+        ) // Todos los id en tramCat deben estar en tramites y en pendientes
+    }
+
+    aux FuncAbs(o': OficinaImpl): Oficina
+        o: Oficina |
+            o.categorias.length == o'.tramCat.length
+            && o.tramitesPend == o'.pendientes
+            && o.catsPrioritarias == o'.catPrioritarias
+            && o.categoriaDe == o'.tramites
+            && forall c : Categoria :: c in o.categorias => (
+                && c in o'.tramCat
+                && forall i : Id :: i in o'.tramCat[c] => (
+                    i in o.tramitesPend
+                    && i in o'.tramites
+                    && o'.tramites[i] == c
+                )
+            )
+            && forall c : Categoria :: c in o'.tramCat <=> c in o.categorias
+}
+
+Ejercicio 8
+
+Estudiante es int
+
+TAD Secundario {
+    obs estudiantes: conj<Estudiante>
+    obs faltas: dict<Estudiante, int>
+    obs notas: dict<Estudiante, seq<int>>
+    
+    proc NuevoSecundario(in es: Conjunto<Estudiante>): Secundario
+        requiere |es| > 0
+        asegura res.estudiantes == es
+        asegura forall e: Estudiante :: e in es ==>L
+        (e in res.faltas &&L res.faltas[e] == 0)
+        asegura forall e: Estudiante :: e in es ==>L
+        (e in res.notas &&L res.notas[e] == [])
+    
+    proc RegistrarNota(inout s: Secundario, in e: Estudiante, in nota: int)
+        requiere e in s.estudiantes
+        requiere 0 <= nota <= 10
+        asegura s.estudiantes == old(s).estudiantes
+        asegura s.faltas == old(s).faltas
+        asegura s.notas == setKey(old(s).notas, e, old(s).notas[e] + [nota])
+    
+    proc RegistrarFalta(inout s: Secundario, in e: Estudiante)
+        requiere e in s.estudiantes
+        asegura s.alumnos == old(s).alumnos
+        asegura s.faltas == setKey(old(s).faltas, e, old(s).faltas[e] + 1)
+        asegura s.notas == old(s).notas
+}
+
+Modulo SecundarioImpl implementa Secundario {
+    var estudiantes: Conjunto<Estudiante>
+    var faltas: Diccionario<Estudiante, int>
+    var notas: Array<Conj<Estudiante>>
+    var notasPorEstudiante: Diccionario<Estudiante, Array<int>>
+    
+    // Notas:
+    // En estudiantes están todos los estudiantes del colegio secundario
+    // En faltas tenemos para cada estudiante la cantidad de faltas que tiene hasta el momento
+    // En notas tenemos en la posición i-ésima a los estudiantes que tienen nota i
+    // En notasPorEstudiante tenemos para cada estudiante la cantidad de notas con valor i-ésimo tienen
+
+    // InvRep:
+    // Todos los estudiantes tienen faltas
+    // Todos los estudiantes tienen notas y notasPorEstudiante
+    // Todos los estudiantes en faltas, notas y notasPorEstudiante están en estudiantes
+    // notas.length == 10
+    // notasPorEstudiante == estudiantes.length y todos sus elementos son de longitud 10
+    // Todas las notas en notasPorEstudiante están entre 0 y 10
+    // Para una posición i en notas, todos los estudiantes e en notas[i] tienen notasPorEstudiante[e][i] > 0
+    // Para un estudiante e en notasPorEstudiante, para toda posición j en notasPorEstudiante[e], e está en notas[j]
+
+    pred InvRep(s': SecundarioImpl) {
+        s'.estudiantes.length == s'.faltas.length
+        && s'.estudiantes.length == s'.notasPorEstudiante.length 
+        && s'.notas.length == 10 // Las notas van de 0 a 10
+        && forall e : Estudiante :: e in s'.notasPorEstudiante => (
+            e in s'.estudiantes // Todos los estudiantes tienen notasPorEstudiante
+            && e in s'.faltas &&L s'.faltas[e] >= 0 // Todos los estudiantes tienen faltas
+            && s'.notasPorEstudiante[e].length == 10 // Todas las notas en notasPorEstudiante están entre 0 y 10
+            && forall i : int :: (0 <= i < 10) => (
+                s'.notasPorEstudiante[e][i] > 0 => e in s'.notas[i] // Para un estudiante e en notasPorEstudiante,
+                // para toda posición j en notasPorEstudiante[e] tal que notasPorEstudiante[e][j] > 0, e está en notas[j]
+            ) // Todos los estudiantes tienen notas
+        )
+    }
+
+    aux FuncAbs(s' SecundarioImpl): Secundario
+        s: Secundario |
+            s.estudiantes == s'.estudiantes
+            && s.faltas == s'.faltas
+            && s.notas == s'.notas
+}
+
+Ejercicio 9 
+
+TAD Fila {
+    obs fila: seq<Persona>
+    obs atendidos: conj<Persona>
+    obs colados: conj<Persona>
+    obs retirados: conj<Persona>
+    
+    proc AbrirVentanilla(): Fila
+        asegura res.fila = []
+        asegura res.atendidos = {}
+        asegura res.colados = {}
+        asegura res.retirados = {}
+    
+    proc Llegar(inout f: Fila, in p: Persona)
+        requiere p not in f.fila
+        asegura old(f).fila = tail(f.fila)
+        asegura p = head(f.fila)
+        asegura f.atendidos = old(f).atendidos
+        asegura f.colados = old(f).colados
+        asegura f.retirados = old(f).retirados
+    
+    proc Atender(inout f: Fila)
+        requiere exists p: Persona :: p in f.fila
+        asegura f.fila = tail(old(f).fila)
+        asegura f.atentidos = old(f).atendidos + {p}
+        asegura f.colados = old(f).colados - {p}
+        asegura f.retirados = old(f).retirados
+    
+    proc Esperando?(in f: Fila, in p: Persona): bool
+        asegura res == true <==> p in f.fila
+    
+    proc Vacía?(in f: Fila): bool
+        asegura res == true <==> |f.fila| == 0
+    
+    proc Posición(in f: Fila, in p: Persona): int
+        requiere p in f.fila
+        asegura res == posición(f.fila, p)
+    
+    proc Longitud(in f: Fila): int
+        asegura res == longitud(f.fila)
+    
+    proc Retirarse(inout f: Fila, in p: Persona)
+        requiere p in f.fila
+        asegura f.fila = old(f).fila[0..posicion(old(f).fila, q)-1] +
+            old(f).fila[posicion(old(f).fila, q)+1..|old(res).fila|-1]
+        asegura f.atentidos = old(f).atendidos
+        asegura f.colados = old(f).colados - {p}
+        asegura f.retirados = old(f).retirados + {p}
+    
+    proc Colarse(inout f: Fila, in p: Persona, in q: Persona)
+        requiere p not in fila
+        requiere q in fila
+        asegura f.fila = old(f).fila[0..posicion(old(f).fila, q)-1] + [p] + old(f).fila[posicion(old(f).fila, q)..|old(res).fila|]
+        asegura f.atentidos = old(f).atendidos
+        asegura f.colados = old(f).colados + {p}
+        asegura f.retirados = old(f).retirados
+    
+    proc SeColó?(in f: Fila, in p: Persona): bool
+        asegura res == true <==> p in f.colados
+    
+    proc Entró?(in f: Fila, in p: Persona): bool
+        asegura res == true <==> (p in f.fila || p in (f.atendidos + f.retirados))
+    
+    proc FueAtendido?(in f: Fila, in p: Persona): bool
+        asegura res == true <==> p in f.atendidos
+    
+    aux posición(ps: seq<Persona>, p: Persona): int
+        sum : 0 <= i < |ps| :: if p = ps[i] then i else 0 fi
+}
+
+Modulo FilaImpl implementa Fila {
+    var entraron: Conjunto<Persona>
+    var fila: Cola<Persona>
+    var colados: Conjunto<Persona>
+    var atendidos: Conjunto<Persona>
+
+    // Notas:
+    // Entraron es un conjunto con todas las personas que alguna vez estuvieron en la fila.
+    // Colados son las personas que están actualmente en la fila y se colaron al llegar.
+    // Atendidos son las personas que fueron atendidas en el banco.
+
+    // InvRep:
+    // Todos los elementos de colados están en entraron
+    // Todos los elementos de atendidos están en entraron
+    // Todos los elementos de fila están en entraron
+    // Todos los elementos de atendidos NO están en fila ni en colados
+    // Todos los elementos de colados NO están en atendidos
+    // Todos los elementos de fila NO están en atendidos
+
+    pred InvRep(f': FilaImpl) {
+        forall p : Persona :: p in f'.entraron => (
+            p in f'.fila || p in f'.colados || p in f'.atendidos
+        ) // Todos los elementos de entraron están en fila, colados o fueron atendidos
+        && forall p : Persona :: p in f'.colados => (
+            p in f'.entraron
+            && p in f'.fila
+            && p not in f'.atendidos
+        ) // Todos los elementos de colados están en entraron, en fila y no fueron atendidos
+        && forall p : Persona :: p in f'.atendidos => (
+            p in f'.entraron
+            && p not in f'.fila
+            && p not in f'.colados
+        ) // Todos los elementos de atendidos están en entraron, no están en fila ni en colados
+        && forall p : Persona :: p in f'.fila => (
+            p in f'.entraron
+            && p not in f'.atendidos
+        ) // Todos los elementos de fila están en entraron y no están en atendidos
+    }
+
+    aux FuncAbs(f': FilaImp): Fila
+        f: Fila |
+            && f.fila == f'.fila
+            && f.colados == f'.colados
+            && f.atendidos == f'.atendidos
+            && f.retirados == f'.entraron - f'.atendidos
+            // Asumo que los atendidos ya se fueron
+            // y que, una vez atendido, alguien no puede volver a la fila y se retira
+}
