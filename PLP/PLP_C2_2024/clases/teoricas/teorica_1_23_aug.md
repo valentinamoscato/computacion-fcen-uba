@@ -102,7 +102,7 @@ Ejemplo:
 
 ### Plegado de listas a izquierda
 
-La función `foldl` abstrae el esquema de recursión estructural:
+La función `foldl` abstrae el esquema de recursión iterativa:
 
     foldl :: (b -> a -> b) -> b -> [a] -> b
     foldl f ac [] = ac
