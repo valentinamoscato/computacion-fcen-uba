@@ -4,6 +4,7 @@
 
 ## Repaso
 - Las funciones `map` y `filter`
+
     ```
     map :: (a -> b) -> [a] -> [b]
     map f [] = []
@@ -15,6 +16,7 @@
                         then x : filter p xs
                         else filter p xs
     ```
+    
 - `map filter :: [(a -> Bool) -> [a]] -> [[a]]`
 - Funciones *lambda*
 
@@ -30,19 +32,16 @@ salvo en la expresión `(g xs)`
 
 Ejemplo:
 
-    ```
     g [] = z
     g (x : xs) = ... x ... (g xs) ...
-    ```
 
 ### Plegado de listas a derecha
 
 La función `foldr` abstrae el esquema de recursión estructural:
-    ```
+
     foldr :: (a -> b -> b) -> b -> [a] -> b
     foldr f z [] = z
     foldr f z (x : xs) = f x (foldr f z xs)
-    ```
 
 **Toda recursión estructural es una instancia de `foldr`.**
 
@@ -67,10 +66,9 @@ salvo en la expresión `(g xs)`, sí puede usar el parámetro `xs`
 
 Ejemplo:
 
-    ```
     g [] = z
     g (x : xs) = ... x ... xs ... (g xs) ...
-    ```
+    
 **Similar a la recursión estructural, pero permite referirse a xs.**
 
 Observación
@@ -82,11 +80,10 @@ también están dadas por recursión primitiva.
 que no están dadas por recursión estructural.
 
 Escribamos una función `recr` para abstraer el esquema de recursión primitiva:
-    ```
+
     recr f z [] = z
     recr f z (x : xs) = f x xs (recr f z xs)
     recr :: (a -> [a] -> b -> b) -> b -> [a] -> b
-    ```
 
 **Toda recursión primitiva es una instancia de `recr`.**
 
@@ -99,35 +96,31 @@ Dada una función `g` que tiene un caso base y un caso recursivo, la definición
 
 Ejemplo:
 
-    ```
     reverseConAcumulador :: [a] -> [a] -> [a]
     reverseConAcumulador ac [] = ac
     reverseConAcumulador ac (x : xs) = reverseConAcumulador (x : ac) xs
-    ```
 
 ### Plegado de listas a izquierda
 
 La función `foldl` abstrae el esquema de recursión estructural:
-    ```
+
     foldl :: (b -> a -> b) -> b -> [a] -> b
     foldl f ac [] = ac
     foldl f ac (x : xs) = foldl f (f ac x) xs
-    ```
 
 **Toda recursión iterativa es una instancia de `foldl`.**
 
 En general `foldr` y `foldl` tienen comportamientos diferentes:
-    ```
+
     foldr (⋆) z [a, b, c] = a ⋆ (b ⋆ (c ⋆ z))
     foldl (⋆) z [a, b, c] = ((z ⋆ a) ⋆ b) ⋆ c
-    ```
+    
 Si (⋆) es un operador asociativo y conmutativo, `foldr` y `foldl` definen la misma función. Por ejemplo:
-    ```
+
     suma = foldr (`+`) 0 = foldl (`+`) 0
     producto = foldr (`*`) 1 = foldl (`*`) 1
     and = foldr (`&&`) True = foldl (`&&`) True
     or = foldr (`||`) False = foldl (`||`) False
-    ```
 
 ## Tipos de datos algebraicos
 
@@ -136,14 +129,14 @@ Si bien existen los tipos de datos "primitivos", también podemos definir nuevos
 `data Tipo = ⟨declaración de los constructores⟩`
 
 En general un tipo de datos algebraico tiene la siguiente forma:
-    ```
+
     data T = CBase1 ⟨parámetros⟩
     ...
     | CBase_n ⟨parámetros⟩
     | CRecursivo_1 ⟨parámetros⟩
     ...
     | CRecursivo_m ⟨parámetros⟩
-    ```
+    
 - Los constructores base no reciben parámetros de tipo `T`.
 - Los constructores recursivos reciben al menos un parámetro de tipo `T`.
 - Los valores de tipo `T` son los que se pueden construir aplicando constructores base y recursivos un número finito de veces y sólo esos.
@@ -155,14 +148,13 @@ La recursión estructural se generaliza a tipos algebraicos en general.
 Supongamos que `T` es un tipo algebraico.
 
 Dada una recursión `g :: T -> Y` definida por ecuaciones:
-    ```
+
     g (CBase_1 ⟨parámetros⟩) = ⟨caso base 1⟩
     ...
     g (CBase_n ⟨parámetros⟩) = ⟨caso base n⟩
     g (CRecursivo_1 ⟨parámetros⟩) = ⟨caso recursivo 1⟩
     ...
     g (CRecursivo_m ⟨parámetros⟩) = ⟨caso recursivo m⟩
-    ```
 
 Decimos que `g` está dada por recursión estructural si:
 1. Cada caso base se escribe combinando los parámetros.
@@ -176,14 +168,13 @@ Decimos que `g` está dada por recursión estructural si:
 ### Casos degenerados de recursión estructural
 
 Es recursión estructural (no usa la cabeza):
-    ```
+
     length :: [a] -> Int
     length [] = 0
     length (_ : xs) = 1 + length xs
-    ```
+    
 Es recursión estructural (no usa el llamado recursivo sobre la cola):
-    ```
+
     head :: [a] -> a
     head [] = error "No tiene cabeza."
     head (x : _) = x
-    ```
