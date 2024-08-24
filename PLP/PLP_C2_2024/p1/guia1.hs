@@ -4,44 +4,6 @@
 {-# HLINT ignore "Use concat" #-}
 {-# HLINT ignore "Use map" #-}
 
--- ejercicio 6
-
--- El siguiente esquema captura la recursión primitiva sobre listas
-recr :: (a -> [a] -> b -> b) -> b -> [a] -> b
-recr _ z [] = z
-recr f z (x : xs) = f x xs (recr f z xs)
-
-sacarUna :: Eq a => a -> [a] -> [a]
-sacarUna x = recr (\y ys r -> if x == y then ys else y : r) [] -- r es el acumulador
--- si x == y, se saca el elemento y de la lista, si no, se deja y en la lista
-
--- foldr no funciona para sacarUna porque no se puede acceder al resto de la lista en la función de plegado
-
-insertarOrdenado :: Ord a => a -> [a] -> [a]
-insertarOrdenado x = recr (\y ys r -> if x <= y then x : y : ys else y : r) [x]
-
--- ejercicio 7
-
-genLista :: a -> (a -> a) -> Integer -> [a]
-genLista _ _ 0 = []
-genLista x f n = x : genLista (f x) f (n-1)
-
-desdeHasta :: Integer -> Integer -> [Integer]
-desdeHasta m n = genLista m (+1) (n-m+1)
-
--- ejercicio 8
-
-mapPares :: (a -> b -> c) -> [(a, b)] -> [c]
-mapPares f = map (uncurry f)
-
-armarPares :: [a] -> [b] -> [(a, b)]
-armarPares [] _ = []
-armarPares _ [] = []
-armarPares (x:xs) (y:ys) = (x, y) : armarPares xs ys
-
-mapDoble :: (a -> b -> c) -> [a] -> [b] -> [c]
-mapDoble f xs ys = mapPares f (armarPares xs ys)
-
 -- ejercicio 10
 
 generate :: ([a] -> Bool) -> ([a] -> a) -> [a]
