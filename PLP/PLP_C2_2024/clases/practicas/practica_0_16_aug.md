@@ -1,34 +1,34 @@
-**Repaso de Haskell**
+# Repaso de Haskell
 
-**Definición de funciones**
+## Definición de funciones
 
 Ejemplo: `f x = x + 1`
 
-**Ejercicios de funciones**
+## Ejercicios de funciones
    - **Promedio**: `promedio a b = (a + b) / 2`
    - **Máximo**: `maximo a b = if a > b then a else b`
    - **Factorial**: `factorial n = if n == 0 then 1 else n * factorial (n - 1)`
 
-**Recursión**
+## Recursión
    - Ejemplo: `factorial 0 = 1; factorial n = n * factorial (n - 1)`
 
-**Listas**
+## Listas
    - Descripción por extensión: `[1, 2, 3, 4, 5]`
    - Descripción recursiva: `1 : (2 : (3 : (4 : (5 : []))))`
 
-**Tipos de datos algebraicos**
+## Tipos de datos algebraicos
    - Ejemplo: `data Bool = True | False`
    - Función: `inverso :: Float -> Maybe Float`
 
-**Variables de tipo**
+## Variables de tipo
 
    - Ejemplo: `[] :: [a]`, `id :: a -> a`, `head :: [a] -> a`, `tail :: [a] -> [a]`, `const :: a -> b -> a`, y `length :: [a] -> Int`
 
-**Tipo de funciones**
+## Tipo de funciones**
 
    - Ejemplo: `f1 :: Int -> (Int -> Int)`, `f2 :: (Int -> Int) -> Int`, y `f3 :: Int -> Int -> Int`
 
-**Convenciones de precedencia y asociatividad**
+## Convenciones de precedencia y asociatividad**
 
 En Haskell, los tipos tienen asociatividad a derecha y la aplicación tiene asociatividad a izquierda. 
 
