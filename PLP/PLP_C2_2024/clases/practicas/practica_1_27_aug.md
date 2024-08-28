@@ -4,7 +4,6 @@
 
 Las funciones en Haskell siempre toman un único argumento. *Currificar* consiste en convertir una función que toma un único argumento en forma de tupla en una que toma *varios* argumentos de forma secuencial.
 
-`
     prodNoCurrificada :: (Int, Int) -> Int
     prodNoCurrificada (x,y) = x*y
 
@@ -83,4 +82,3 @@ Las funciones en Haskell siempre toman un único argumento. *Currificar* consist
 
     -- mejorSegun usando foldr1
     mejorSegun p = foldr1 (\x rec -> if p x rec then x else rec)
-`
