@@ -16,7 +16,7 @@ Para razonar sobre equivalencia de expresiones vamos a asumir:
 
 **Principio de reemplazo**
 
-Sea `e1 = e2 `una ecuación incluida en el programa.
+Sea `e1 = e2` una ecuación incluida en el programa.
 
 Las siguientes operaciones preservan la igualdad de expresiones:
 
