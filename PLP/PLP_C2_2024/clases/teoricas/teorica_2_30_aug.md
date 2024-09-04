@@ -107,6 +107,7 @@ Para probar que dos funciones son iguales, basta probar que son iguales punto a 
 ## Corrección del razonamiento ecuacional
 
 **Corrección con respecto a observaciones**
+
 Si demostramos `e1 = e2 :: A`, entonces:
 
 `obs e1 ⇝ True` si y sólo si `obs e2 ⇝ True`
