@@ -97,11 +97,11 @@ Si `(∀x :: a . f x = g x)` entonces `f = g`
 
 Razonamos ecuacionalmente usando tres principios:
 
-1. **Principio de reemplazo**
+1. **Principio de reemplazo**: 
 Si el programa declara que e1 = e2, cualquier instancia de e1 es igual a la correspondiente instancia de e2, y viceversa.
-2. **Principio de inducción estructural**
+2. **Principio de inducción estructural**: 
 Para probar P sobre todas las instancias de un tipo T, basta probar P para cada uno de los constructores (asumiendo la H.I. para los constructores recursivos).
-3. **Principio de extensionalidad funcional**
+3. **Principio de extensionalidad funcional**: 
 Para probar que dos funciones son iguales, basta probar que son iguales punto a punto.
 
 ## Corrección del razonamiento ecuacional
