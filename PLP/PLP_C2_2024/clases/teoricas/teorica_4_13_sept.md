@@ -1,4 +1,4 @@
-# Teórica 3 - 06 de Septiembre
+# Teórica 4 - 13 de Septiembre
 
 # **Sistemas deductivos**
 
