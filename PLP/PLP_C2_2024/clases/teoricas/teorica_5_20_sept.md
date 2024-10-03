@@ -18,13 +18,13 @@ Se basa sólo en dos operaciones: construir funciones y aplicarlas.
 - Núcleo de lenguajes de programación funcionales y asistentes
 de demostración. *Lisp, OCaml, Haskell, Coq, Agda, Lean, ...*
 - Laboratorio para investigar nuevas características de lenguajes.
-- Fuertemente conectado con la teoría de la demostración, matemática constructiva, teoría de categorías, ...
+- Fuertemente conectado con la teoría de la demostración, matemática constructiva, teoría de categorías,...
 
 ## Cálculo λ - Sintaxis y tipado
 
 **Sintaxis de los tipos**
 
-`τ , σ, ρ, ... ::= bool
+`τ, σ, ρ, ... ::= bool
                 | τ → σ`
 
 Asumimos que el constructor de tipos “`→`” es asociativo a derecha:
