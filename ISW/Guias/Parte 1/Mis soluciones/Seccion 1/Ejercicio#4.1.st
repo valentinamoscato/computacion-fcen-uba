@@ -1,0 +1,328 @@
+!classDefinition: #I category: #'Ejercicio 4'!
+DenotativeObject subclass: #I
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'I class' category: #'Ejercicio 4'!
+I class
+	instanceVariableNames: ''!
+
+!I class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 17:50:21'!
+next
+	^II.! !
+
+!I class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 18:59:40'!
+previous
+	self error: 'El uno es el primer numero natural'.! !
+
+
+!I class methodsFor: 'error descriptions' stamp: 'vm 3/24/2025 20:45:34'!
+descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+	^'No se puede dividir por un numero mayor'.! !
+
+!I class methodsFor: 'error descriptions' stamp: 'vm 3/24/2025 20:43:08'!
+descripcionDeErrorDeNumerosNegativosNoSoportados
+	^'Numeros negativos no soportados'.! !
+
+
+!I class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 17:56:29'!
+* aMultiplicand
+	^aMultiplicand.
+	! !
+
+!I class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 17:55:52'!
++ anAdder
+	^anAdder next.! !
+
+!I class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:43:40'!
+- aSustrahend
+	self error: self descripcionDeErrorDeNumerosNegativosNoSoportados.
+	! !
+
+!I class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:45:47'!
+/ aDividend
+	aDividend = I ifTrue: [^I] ifFalse: [self error: self descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor].! !
+
+
+!I class methodsFor: 'comparison' stamp: 'vm 3/24/2025 23:22:16'!
+<= aNumber
+	^true.! !
+
+
+!classDefinition: #II category: #'Ejercicio 4'!
+DenotativeObject subclass: #II
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'II class' category: #'Ejercicio 4'!
+II class
+	instanceVariableNames: 'previous next'!
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 20:34:26'!
+nameOfNext
+"	(self name endsWith: 'CMXCIX') ifTrue:[^(self name withoutSuffix: 'CMXCIX'), 'M'].
+	(self name endsWith: 'DCCCXCIX') ifTrue:[^(self name withoutSuffix: 'DCCCXCIX'), 'CM'].
+	(self name endsWith: 'CDXCIX') ifTrue:[^(self name withoutSuffix: 'CDXCIX'), 'D'].
+	(self name endsWith: 'CCCXCIX') ifTrue:[^(self name withoutSuffix: 'CCCXCIX'), 'CD'].
+	(self name endsWith: 'XCIX') ifTrue:[^(self name withoutSuffix: 'XCIX'), 'C'].
+	(self name endsWith: 'LXXXIX') ifTrue:[^(self name withoutSuffix: 'LXXXIX'), 'XC'].
+	(self name endsWith: 'XLIX') ifTrue:[^(self name withoutSuffix: 'XLIX'), 'L'].
+	(self name endsWith: 'XXXIX') ifTrue:[^(self name withoutSuffix: 'XXXIX'), 'XL'].
+	(self name endsWith: 'IX') ifTrue:[^(self name withoutSuffix: 'IX'), 'X'].
+	(self name endsWith: 'VIII') ifTrue:[^(self name withoutSuffix: 'VIII'), 'IX'].
+	(self name endsWith: 'III') ifTrue:[^(self name withoutSuffix: 'III'), 'IV'].
+	(self name endsWith: 'IV') ifTrue:[^(self name withoutSuffix: 'IV'), 'V']."
+	^self name, 'I'.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:05:38'!
+next
+	next := II createChildNamed: self nameOfNext.
+	next previous: self.
+	^next.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:03:36'!
+previous
+	^previous.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:03:43'!
+previous: aNumber
+	previous := aNumber.! !
+
+
+!II class methodsFor: 'error descriptions' stamp: 'vm 3/24/2025 20:44:44'!
+descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+	^'No se puede dividir por un numero mayor'.! !
+
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:38:37'!
+* aMultiplicand
+	(aMultiplicand isEqualTo: I)
+	ifTrue: [^self]
+	ifFalse: [^self + (self * (aMultiplicand previous))].
+	! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:33:01'!
++ anAdder
+	(anAdder isEqualTo: I)
+	ifTrue: [^self next]
+	ifFalse: [^I + self + anAdder previous].! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 19:40:00'!
+- aSubtrahend
+	(aSubtrahend isEqualTo: I)
+	ifTrue: [^self previous]
+	ifFalse: [^self previous - aSubtrahend previous]! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 23:28:37'!
+/ aDividend
+	aDividend <= self
+		ifFalse:[
+			self error: self descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+		].
+	aDividend = self ifTrue:[^I].
+	aDividend <= (self - aDividend) ifFalse: [^I].
+	^I + ((self - aDividend) / aDividend).
+	! !
+
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:38:37'!
+* aMultiplicand
+	(aMultiplicand isEqualTo: I)
+	ifTrue: [^self]
+	ifFalse: [^self + (self * (aMultiplicand previous))].
+	! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 20:33:01'!
++ anAdder
+	(anAdder isEqualTo: I)
+	ifTrue: [^self next]
+	ifFalse: [^I + self + anAdder previous].! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 19:40:00'!
+- aSubtrahend
+	(aSubtrahend isEqualTo: I)
+	ifTrue: [^self previous]
+	ifFalse: [^self previous - aSubtrahend previous]! !
+
+!II class methodsFor: 'aritmethic operations' stamp: 'vm 3/24/2025 23:28:37'!
+/ aDividend
+	aDividend <= self
+		ifFalse:[
+			self error: self descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+		].
+	aDividend = self ifTrue:[^I].
+	aDividend <= (self - aDividend) ifFalse: [^I].
+	^I + ((self - aDividend) / aDividend).
+	! !
+
+!II class methodsFor: 'comparison' stamp: 'vm 3/24/2025 23:20:48'!
+< aNumber
+	aNumber = I
+	ifTrue: [^false].
+	^self previous < aNumber previous.! !
+
+!II class methodsFor: 'comparison' stamp: 'vm 3/24/2025 23:22:44'!
+<= aNumber
+	aNumber = I
+	ifTrue: [^false].
+	^self previous <= aNumber previous.! !
+
+!II class methodsFor: 'error descriptions' stamp: 'vm 3/24/2025 20:44:44'!
+descripcionDeErrorDeNoSePuedeDividirPorUnNumeroMayor
+	^'No se puede dividir por un numero mayor'.! !
+
+!II class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := I.
+	next := III.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 20:34:26'!
+nameOfNext
+"	(self name endsWith: 'CMXCIX') ifTrue:[^(self name withoutSuffix: 'CMXCIX'), 'M'].
+	(self name endsWith: 'DCCCXCIX') ifTrue:[^(self name withoutSuffix: 'DCCCXCIX'), 'CM'].
+	(self name endsWith: 'CDXCIX') ifTrue:[^(self name withoutSuffix: 'CDXCIX'), 'D'].
+	(self name endsWith: 'CCCXCIX') ifTrue:[^(self name withoutSuffix: 'CCCXCIX'), 'CD'].
+	(self name endsWith: 'XCIX') ifTrue:[^(self name withoutSuffix: 'XCIX'), 'C'].
+	(self name endsWith: 'LXXXIX') ifTrue:[^(self name withoutSuffix: 'LXXXIX'), 'XC'].
+	(self name endsWith: 'XLIX') ifTrue:[^(self name withoutSuffix: 'XLIX'), 'L'].
+	(self name endsWith: 'XXXIX') ifTrue:[^(self name withoutSuffix: 'XXXIX'), 'XL'].
+	(self name endsWith: 'IX') ifTrue:[^(self name withoutSuffix: 'IX'), 'X'].
+	(self name endsWith: 'VIII') ifTrue:[^(self name withoutSuffix: 'VIII'), 'IX'].
+	(self name endsWith: 'III') ifTrue:[^(self name withoutSuffix: 'III'), 'IV'].
+	(self name endsWith: 'IV') ifTrue:[^(self name withoutSuffix: 'IV'), 'V']."
+	^self name, 'I'.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:05:38'!
+next
+	next := II createChildNamed: self nameOfNext.
+	next previous: self.
+	^next.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:03:36'!
+previous
+	^previous.! !
+
+!II class methodsFor: 'next & previous' stamp: 'vm 3/24/2025 19:03:43'!
+previous: aNumber
+	previous := aNumber.! !
+
+
+!II class methodsFor: 'comparison' stamp: 'vm 3/24/2025 23:20:48'!
+< aNumber
+	aNumber = I
+	ifTrue: [^false].
+	^self previous < aNumber previous.! !
+
+!II class methodsFor: 'comparison' stamp: 'vm 3/24/2025 23:22:44'!
+<= aNumber
+	aNumber = I
+	ifTrue: [^false].
+	^self previous <= aNumber previous.! !
+
+
+!II class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := I.
+	next := III.! !
+
+
+!classDefinition: #III category: #'Ejercicio 4'!
+II subclass: #III
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'III class' category: #'Ejercicio 4'!
+III class
+	instanceVariableNames: ''!
+
+!III class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := II.
+	next := IIII.! !
+
+
+!classDefinition: #IIII category: #'Ejercicio 4'!
+II subclass: #IIII
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'IIII class' category: #'Ejercicio 4'!
+IIII class
+	instanceVariableNames: ''!
+
+!IIII class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := III.
+	next := IIIII.! !
+
+
+!classDefinition: #IIIII category: #'Ejercicio 4'!
+II subclass: #IIIII
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'IIIII class' category: #'Ejercicio 4'!
+IIIII class
+	instanceVariableNames: ''!
+
+!IIIII class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := IIII.
+	next := IIIIII.! !
+
+
+!classDefinition: #IIIIII category: #'Ejercicio 4'!
+II subclass: #IIIIII
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Ejercicio 4'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'IIIIII class' category: #'Ejercicio 4'!
+IIIIII class
+	instanceVariableNames: ''!
+
+!IIIIII class methodsFor: '--** private fileout/in **--' stamp: 'vm 3/24/2025 23:31:26'!
+initializeCollaboratorsFromFile
+	"Auto generated method for loading purposes - Do not modify it"
+
+	previous := IIIII.
+	next := nil.! !
+
+II initializeAfterFileIn!
+III initializeAfterFileIn!
+IIII initializeAfterFileIn!
+IIIII initializeAfterFileIn!
+IIIIII initializeAfterFileIn!
