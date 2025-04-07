@@ -50,5 +50,23 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "Aciertos",
+        "Adelante",
+        "Aleatorios",
+        "ambas",
+        "Atras",
+        "coincidan",
+        "Cuento",
+        "formar",
+        "formas",
+        "haya",
+        "llegar",
+        "movimientos",
+        "probabilidad",
+        "recibida",
+        "sumando",
+        "tantas"
+    ]
 }
