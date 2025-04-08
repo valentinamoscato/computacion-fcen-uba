@@ -2,59 +2,67 @@
 #include <vector>
 using namespace std;
 
-int caminoMinimo = 0;
+string resultado = "NO";
+int caminoMinimo = INT_MAX;
+unordered_map<tuple<int, int, int>, bool> memo;
 
-void caminoMasCorto(int i, int j, int n, int m, vector<vector<int> > matriz, int suma, int camino) {
-    // Podas BT
+int temperatura(int i, int j, vector<vector<int> >& matriz, int camino, int sumaDeTemperatura) {
+    if (i < 0 || i >= matriz.size() || j < 0 || j >= matriz[0].size()) {
+        return INT_MAX; // Fuera de los limites del mapa, retorno un numero grande para indicar que no es un camino valido
+    }
 
-    if (i >= n || j >= m || i < 0 || j < 0) { // Si me salgo de la matriz
-        return;
+    if (camino >= caminoMinimo) {
+        return INT_MAX; // Si el camino ya es mayor al camino minimo, retorno un numero grande
     }
     
+    if (i == matriz.size() - 1 && j == matriz[0].size() - 1) {
+        if (sumaDeTemperatura + matriz[i][j] == 0) {
+            resultado = "YES"; // Encontre un camino minimo que mantiene la temperatura en 0
+            caminoMinimo = min(caminoMinimo, camino); // Actualizo el camino minimo
+        }
+        return camino; // Termine de recorrer el mapa
+    }
 
-    if(i == n && j == m) { // Si llegue a la esquina inferior derecha
-        if (suma == 0 && camino < caminoMinimo) { // Si es un camino valido y es el mas corto
-            caminoMinimo = camino;
-        }
-        if (suma == 0) {
-            cout << "YES" << endl;
-            return;
-        }
-    }
-    
-    // Movimiento por la matriz
-    if(j < m) {
-        caminoMasCorto(i, j + 1, n, m, matriz, suma + matriz[i][j], camino + 1); // Moverme a la derecha
-    }
-    if (i < n) {
-        caminoMasCorto(i + 1, j, n, m, matriz, suma + matriz[i][j], camino + 1); // Moverme hacia abajo
-    }
-    if (j > 0) {
-        caminoMasCorto(i, j - 1, n, m, matriz, suma + matriz[i][j], camino + 1); // Moverme hacia la izquierda
-    }
-    cout << "NO" << endl;
+    // Busco el camino mas chico entre moverme hacia abajo o hacia la derecha
+    int caminoHaciaAbajo = temperatura(i + 1, j, matriz, camino + 1, sumaDeTemperatura + matriz[i][j]);
+    int caminoHaciaLaDerecha = temperatura(i, j + 1, matriz, camino + 1, sumaDeTemperatura + matriz[i][j]);
+
+    int nuevoCamino = min(caminoHaciaAbajo, caminoHaciaLaDerecha);
+
+    return nuevoCamino;
 }
 
 int main() {
-    int casosDePrueba = 0;
+    int casosDePrueba;
+    cin >> casosDePrueba;
 
-    std::cin >> casosDePrueba;
-
-    int n = 0;
-    int m = 0;
-
-    std::cin >> n;
-    std::cin >> m;
+    vector<vector<vector<int> > > mapas;
     
-    vector<vector<int> > matriz(n, vector<int>(m));
+    while (casosDePrueba > 0) {
+        int n, m;
+        cin >> n >> m;
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            std::cin >> matriz[i][j];
+        vector<vector<int> > matriz(n, vector<int>(m));
+
+        int i, j;
+        // Inicializar la matriz con valores del input
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < m; j++) {
+                cin >> matriz[i][j];
+            }
         }
+
+        mapas.push_back(matriz);
+        casosDePrueba--;
     }
 
-    caminoMasCorto(0, 0, n, m, matriz, 0, 0); // Llamada inicial
+    for (int k = 0; k < mapas.size(); k++) {
+        vector<vector<int> > m = mapas[k];
+        caminoMinimo = INT_MAX; // Reinicio el camino minimo para cada caso de prueba
+        temperatura(0, 0, m, 0, 0);
+        cout << resultado << endl;
+        resultado = "NO"; // Reinicio el resultado para el siguiente caso de prueba
+    }
 
     return 0;
 }
