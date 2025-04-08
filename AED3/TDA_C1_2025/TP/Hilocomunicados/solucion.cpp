@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 double potencia(double b, int e) { // Potencia (para exponentes positivos)
@@ -91,7 +92,7 @@ int main() {
     std::cin >> secuenciaRecibida;
     
     double probabilidad = probabilidadDePosicionCorrecta(secuenciaDictada, secuenciaRecibida);
-    cout << probabilidad << endl;
+    cout << std::fixed << std::setprecision(25) << probabilidad << endl;
 
     return 0;
 }
