@@ -85,11 +85,15 @@
         "Reinicio",
         "retorno",
         "sumando",
+<<<<<<< HEAD
         "tantas",
         "temperatura",
         "Templado",
         "Termine",
         "Visitadas"
+=======
+        "tantas"
+>>>>>>> 3614651 (Conflictos)
     ],
     "C_Cpp.errorSquiggles": "disabled"
 }
