@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
-TARGET = static_v2
+TARGET = string_functions
 
 all: $(TARGET)
 
-$(TARGET): static_v2.o
+$(TARGET): string_functions.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-static_v2.o: static_v2.c
+string_functions.o: string_functions.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

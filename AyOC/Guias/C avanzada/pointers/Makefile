@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
-TARGET = static_v2
+TARGET = pointers
 
 all: $(TARGET)
 
-$(TARGET): static_v2.o
+$(TARGET): pointers.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-static_v2.o: static_v2.c
+pointers.o: pointers.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
